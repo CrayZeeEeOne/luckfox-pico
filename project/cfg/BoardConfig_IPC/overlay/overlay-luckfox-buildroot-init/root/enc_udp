@@ -1,0 +1,10 @@
+ffmpeg -re -stream_loop -1 -i video.mp4 \
+-vf "scale=640:480,fps=25" \
+-c:v libx264 -preset ultrafast -tune zerolatency \
+-x264-params keyint=25:min-keyint=1:scenecut=0 \
+-b:v 1000k -maxrate 1200k -bufsize 2000k \
+-an \
+-flush_packets 1 \
+-fflags nobuffer -flags low_delay \
+-f mpegts -pkt_size 1000 \
+udp://10.0.0.3:6000

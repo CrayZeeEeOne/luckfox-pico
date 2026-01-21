@@ -1,0 +1,59 @@
+#!/bin/sh
+
+WG_IF="wg0"
+WG_ADDR="10.0.0.2/24"
+
+PRIVATE_KEY=" "
+
+PEER_PUBKEY=" "
+VPS_ENDPOINT="VPS_IP:51820"
+ALLOWED_IPS="0.0.0.0/0"
+KEEPALIVE=25
+
+start() {
+        insmod /oem/usr/ko/poly1305-arm.ko
+        insmod /oem/usr/ko/chacha-neon.ko
+        insmod /oem/usr/ko/libchacha20poly1305.ko
+        insmod /oem/usr/ko/libcurve25519-generic.ko
+        insmod /oem/usr/ko/ipv6.ko
+        insmod /oem/usr/ko/udp_tunnel.ko
+        insmod /oem/usr/ko/ip6_udp_tunnel.ko
+        insmod /oem/usr/ko/wireguard.ko
+
+        ip link add "$WG_IF" type wireguard
+
+    echo "$PRIVATE_KEY" | wg set "$WG_IF" \
+        private-key /dev/stdin \
+        peer "$PEER_PUBKEY" \
+        endpoint "$VPS_ENDPOINT" \
+        allowed-ips "$ALLOWED_IPS" \
+        persistent-keepalive "$KEEPALIVE"
+
+    ip addr add "$WG_ADDR" dev "$WG_IF" 2>/dev/null
+    ip link set "$WG_IF" up
+}
+
+stop() {
+    ip link del "$WG_IF" 2>/dev/null
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        stop
+        sleep 1
+        start
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+        ;;
+esac
+
+exit 0
+
