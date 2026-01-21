@@ -7,4 +7,4 @@ ffmpeg -re -stream_loop -1 -i video.mp4 \
 -flush_packets 1 \
 -fflags nobuffer -flags low_delay \
 -f mpegts -pkt_size 1000 \
-udp://10.0.0.3:6000
+udp://10.0.0.5:6000
